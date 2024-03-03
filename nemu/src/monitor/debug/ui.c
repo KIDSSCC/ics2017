@@ -109,11 +109,11 @@ static int cmd_info(char *args)
 			printf("esp: 0x%08x\t\t\tebp: 0x%08x\n", cpu.esp, cpu.ebp);
 			printf("esi: 0x%08x\t\t\tedi: 0x%08x\n", cpu.esi, cpu.edi);
 			printf("eip: 0x%08x\n", cpu.eip);
-			printf("----------register end----------/n");
+			printf("----------register end----------\n");
 			return 0;
 		} 
 		if(strcmp(arg, "w") == 0) {
-			printf("need to print watchpoint");
+			printf("need to print watchpoint\n");
 			return 0;
 		}
 		printf("wrong arguments\n");
