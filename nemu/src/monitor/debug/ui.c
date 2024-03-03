@@ -40,6 +40,8 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args);
 
+static int cmd_info(char *args);
+
 static struct {
   char *name;
   char *description;
@@ -51,6 +53,7 @@ static struct {
 
   /* TODO: Add more commands */
   { "si", "Run N instructions", cmd_si },
+  { "info", "print the information of reg or watchpoint", cmd_info},
 
 };
 
@@ -90,6 +93,32 @@ static int cmd_si(char *args)
 		cpu_exec(value);
 	}
 	return 0;
+}
+
+static int cmd_info(char *args)
+{
+	char *arg = strtok(NULL, " ");
+	if(arg == NULL) {
+		printf("Without argument\n");
+		return 0;
+	} else {
+		if(strcmp(arg,"r") == 0) {
+			printf("----------register begin----------\n");
+			printf("eax: 0x%08x\t\t\tebx: 0x%08x\n", cpu.eax, cpu.ebx);
+			printf("ecx: 0x%08x\t\t\tedx: 0x%08x\n", cpu.ecx, cpu.edx);
+			printf("esp: 0x%08x\t\t\tebp: 0x%08x\n", cpu.esp, cpu.ebp);
+			printf("esi: 0x%08x\t\t\tedi: 0x%08x\n", cpu.esi, cpu.edi);
+			printf("eip: 0x%08x\n", cpu.eip);
+			printf("----------register end----------/n");
+			return 0;
+		} 
+		if(strcmp(arg, "w") == 0) {
+			printf("need to print watchpoint");
+			return 0;
+		}
+		printf("wrong arguments\n");
+		return 0;
+	}
 }
 
 void ui_mainloop(int is_batch_mode) {
