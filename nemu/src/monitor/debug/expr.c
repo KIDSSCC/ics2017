@@ -7,9 +7,19 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ
+  TK_NOTYPE = 256, TK_EQ,
 
   /* TODO: Add more token types */
+  TK_LB=255,TK_RB=254,
+  TK_NUM=253,
+  TK_NEGATIVE=252,
+  TK_0xNUM=251,
+  TK_REG=250,
+  TK_DERE=249,
+  TK_NEQ=248,
+  TK_AND=247,
+  TK_OR=246,
+  TK_NOT=245
 
 };
 
@@ -23,8 +33,20 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
+  {"\\(", TK_LB},	// LB
+  {"\\)", TK_RB},	// RB
+  {"^(0|[1-9][0-9]*)", TK_NUM},	//NUM
+  {"^0x[0-9a-fA-F]+", TK_0xNUM},	//0xNUM
+  {"^\\$[a-z]+", TK_REG},	//REG
+  {"==", TK_EQ},	// equal
+  {"!=", TK_NEQ},	// nequal
+  {"&&", TK_AND},	// AND
+  {"\\|\\|", TK_OR},	//OR
   {"\\+", '+'},         // plus
-  {"==", TK_EQ}         // equal
+  {"-", '-'},	//sub
+  {"\\*", '*'},	//mul
+  {"/", '/'},	//div
+  {"!", TK_NOT}	//NOT
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -80,7 +102,61 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+		case '+':
+			tokens[nr_token++].type='+';
+			break;
+		case '-':
+			tokens[nr_token++].type='-';
+	                break;
+		case '*':
+			tokens[nr_token++].type='*';
+			break;
+		case '/':
+			tokens[nr_token++].type='/';
+			break;
+		case TK_EQ:
+			tokens[nr_token++].type=TK_EQ;
+			break;
+		case TK_NEQ:
+			tokens[nr_token++].type=TK_NEQ;
+			break;
+		case TK_AND:
+			tokens[nr_token++].type=TK_AND;
+			break;
+		case TK_OR:
+			tokens[nr_token++].type=TK_OR;
+			break;
+		case TK_LB:
+			tokens[nr_token++].type=TK_LB;
+			break;
+		case TK_RB:
+			tokens[nr_token++].type=TK_RB;
+			break;
+		case TK_NOT:
+			tokens[nr_token++].type=TK_NOT;
+			break;
+		case TK_NUM:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_NUM;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
+		case TK_0xNUM:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_0xNUM;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
+		case TK_REG:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_REG;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
+          default: break;
         }
 
         break;
@@ -94,6 +170,37 @@ static bool make_token(char *e) {
   }
 
   return true;
+}
+
+bool check_parentheses(int p, int q, int* errorType)
+{
+	if((tokens[p].type!=TK_LB)||(tokens[q].type!=TK_RB)){
+		return false;
+	}
+	int numOfBr = 0;
+	int theRightMatchForLeft = q;
+	for(int i=p; i<=q; i++){
+		if(tokens[i].type==TK_LB){
+			numOfBr++;
+		}else if(tokens[i].type==TK_RB){
+			if(numOfBr==1){
+				theRightMatchForLeft = i;
+			}
+			numOfBr--;
+			if(numOfBr<0){
+				*errorType=1;
+				return false;
+			}
+		}
+	}
+	if(theRightMatchForLeft!=q){
+		return false;
+	}
+	if(numOfBr!=0){
+		*errorType = 2;
+		return false;
+	}
+	return (int)true;
 }
 
 uint32_t expr(char *e, bool *success) {
