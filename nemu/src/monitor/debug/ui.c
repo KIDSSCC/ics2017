@@ -143,7 +143,7 @@ static int cmd_x(char *args)
 		printf("0x%08x: ", curr);
 		printf("0x%08x\n", vaddr_read(curr, 4));
 	}
-	printf("----------memoey end----------");
+	printf("----------memoey end----------\n");
 	return 0;
 }
 
