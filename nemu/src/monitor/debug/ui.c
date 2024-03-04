@@ -42,6 +42,8 @@ static int cmd_si(char *args);
 
 static int cmd_info(char *args);
 
+static int cmd_x(char *args);
+
 static struct {
   char *name;
   char *description;
@@ -54,6 +56,7 @@ static struct {
   /* TODO: Add more commands */
   { "si", "Run N instructions", cmd_si },
   { "info", "print the information of reg or watchpoint", cmd_info},
+  { "x", "scan the memory", cmd_x},
 
 };
 
@@ -119,6 +122,29 @@ static int cmd_info(char *args)
 		printf("wrong arguments\n");
 		return 0;
 	}
+}
+
+static int cmd_x(char *args)
+{
+	char *N_char = strtok(NULL, " ");
+	char *expr_char = strtok(NULL, " ");
+	if((N_char == NULL)||(expr_char == NULL))
+	{
+		printf("wrong argument number\n");
+		return 0;
+	}
+	char *tmp;
+	int N = strtol(N_char, &tmp, 10);
+	unsigned int start_address = strtol(expr_char, &tmp, 16);
+	printf("----------memory begin----------");
+	for(int i = 0; i<4*N; i+=4)
+	{
+		unsigned int curr = start_address + i;
+		printf("0x%08x: ", curr);
+		printf("0x%08x\n", vaddr_read(curr, 4));
+	}
+	printf("----------memoey end----------");
+	return 0;
 }
 
 void ui_mainloop(int is_batch_mode) {
