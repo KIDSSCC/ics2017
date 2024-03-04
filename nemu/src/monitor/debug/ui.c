@@ -136,7 +136,7 @@ static int cmd_x(char *args)
 	char *tmp;
 	int N = strtol(N_char, &tmp, 10);
 	unsigned int start_address = strtol(expr_char, &tmp, 16);
-	printf("----------memory begin----------");
+	printf("----------memory begin----------\n");
 	for(int i = 0; i<4*N; i+=4)
 	{
 		unsigned int curr = start_address + i;
