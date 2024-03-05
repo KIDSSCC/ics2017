@@ -44,6 +44,7 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
 static struct {
   char *name;
   char *description;
@@ -57,6 +58,7 @@ static struct {
   { "si", "Run N instructions", cmd_si },
   { "info", "print the information of reg or watchpoint", cmd_info},
   { "x", "scan the memory", cmd_x},
+  { "p", "calculate the expr", cmd_p},
 
 };
 
@@ -147,6 +149,50 @@ static int cmd_x(char *args)
 	return 0;
 }
 
+static int cmd_p(char *args){
+	char *arg = strtok(args, " ");
+	if(arg == NULL){
+		printf("without argument\n");
+		return 0;
+	}else{
+		int result = 0;
+		uint32_t value = expr(arg, &result);
+		/*
+		 * result=0:success;
+		 * result=1:make token error;
+		 * result=2:calculate failed p>q;
+		 * result=3:the right are more than left
+		 * result=4:the left are more than right
+		 */
+		if(result==0){
+			return value;
+		}else{
+			printf("error: ");
+			switch (result) {
+				case 1:
+					printf("make token error\n");
+					return 0;
+				case 2:
+					printf("calculate failed p>q\n");
+					return 0;
+				case 3:
+					printf("the right are more than left\n");
+					return 0;
+				case 4:
+					printf("the left are more than right\n");
+					return 0;
+				case 5:
+					printf("cannot find the reg\n");
+					return 0;
+				case 6:
+					printf("access memory out of bound\n");
+				default:return 0;
+			}
+			return 0;
+		}
+	}
+	return 0;
+}
 void ui_mainloop(int is_batch_mode) {
   if (is_batch_mode) {
     cmd_c(NULL);
