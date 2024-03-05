@@ -36,8 +36,8 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\(", TK_LB},	// LB
   {"\\)", TK_RB},	// RB
-  {"^(0|[1-9][0-9]*)", TK_NUM},	//NUM
   {"^0x[0-9a-fA-F]+", TK_0xNUM},	//0xNUM
+  {"^(0|[1-9][0-9]*)", TK_NUM},	//NUM
   {"^\\$[a-z]+", TK_REG},	//REG
   {"==", TK_EQ},	// equal
   {"!=", TK_NEQ},	// nequal
