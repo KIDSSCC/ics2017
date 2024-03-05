@@ -137,7 +137,8 @@ static int cmd_x(char *args)
 	}
 	char *tmp;
 	int N = strtol(N_char, &tmp, 10);
-	unsigned int start_address = strtol(expr_char, &tmp, 16);
+	//unsigned int start_address = strtol(expr_char, &tmp, 16);
+	unsigned int start_address = cmd_p(expr_char);
 	printf("----------memory begin----------\n");
 	for(int i = 0; i<4*N; i+=4)
 	{
