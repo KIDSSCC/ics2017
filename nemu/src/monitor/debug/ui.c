@@ -223,7 +223,15 @@ void ui_mainloop(int is_batch_mode) {
     int i;
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
-        if (cmd_table[i].handler(args) < 0) { return; }
+	      int result=cmd_table[i].handler(args);
+	      if(strcmp("p", cmd_table[i].name)==0){
+		      printf("%d\n", (uint32_t)result);
+	      }else{
+		      if(result<0){
+			      return ;
+		      }
+	      }
+        //if (cmd_table[i].handler(args) < 0) { return; }
         break;
       }
     }
