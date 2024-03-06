@@ -18,4 +18,8 @@ WP* new_wp();
 void free_up(WP* wp);
 void flash(WP* wp);
 
+WP* getHead();
+void free_watchpoint(int n);
+void printlist();
+
 #endif

@@ -65,3 +65,38 @@ void flash(WP* wp){
 	memset(wp->expr, 0, 32);
 	wp->value = 0;
 }
+
+WP* getHead(){
+	return head;
+}
+void free_watchpoint(int n){
+	if((n<0)||(n>NR_WP)){
+		printf("out of range");
+	}else{
+		free_up(&wp_pool[n]);
+	}
+}
+void printlist(){
+	printf("freelist: ");
+	WP* itea = free_;
+	while(itea!=NULL){
+		printf("%d ", itea->NO);
+		itea = itea->next;
+	}
+	printf("\n");
+	printf("Uselist: ");
+	itea = head;
+	while(itea!=NULL){
+		printf("%d ", itea->NO);
+		itea = itea->next;
+	}
+	printf("\n");
+	itea = head;
+	while(itea!=NULL){
+		printf("No:%d,expr is %s,the value is %d\n",itea->NO,itea->expr,itea->value);
+		itea = itea->next;
+	}
+}
+
+	
+
