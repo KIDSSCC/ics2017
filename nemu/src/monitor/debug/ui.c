@@ -45,6 +45,11 @@ static int cmd_info(char *args);
 static int cmd_x(char *args);
 
 static int cmd_p(char *args);
+
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
 static struct {
   char *name;
   char *description;
@@ -59,6 +64,8 @@ static struct {
   { "info", "print the information of reg or watchpoint", cmd_info},
   { "x", "scan the memory", cmd_x},
   { "p", "calculate the expr", cmd_p},
+  { "w", "set the watchpoint", cmd_w},
+  { "d", "delete the watchpoint", cmd_d},
 
 };
 
@@ -118,7 +125,7 @@ static int cmd_info(char *args)
 			return 0;
 		} 
 		if(strcmp(arg, "w") == 0) {
-			printf("need to print watchpoint\n");
+			printlist();
 			return 0;
 		}
 		printf("wrong arguments\n");
@@ -194,6 +201,20 @@ static int cmd_p(char *args){
 	}
 	return 0;
 }
+static int cmd_w(char *args){
+	WP* newWP = new_wp();
+	strcpy(newWP->expr, args);
+	newWP->value = cmd_p(args);
+	return 0;
+}
+static int cmd_d(char *args){
+	char *N_char = strtok(args, " ");
+	char *tmp;
+	int N = strtol(N_char, &tmp, 10);
+	free_watchpoint(N);
+	return 0;
+}
+
 void ui_mainloop(int is_batch_mode) {
   if (is_batch_mode) {
     cmd_c(NULL);
