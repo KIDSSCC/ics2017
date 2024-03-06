@@ -19,5 +19,49 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
+void insert(WP* from, WP* what){
+	WP* itea=from;
+	while(itea->next!=NULL){
+		itea=itea->next;
+	}
+	itea->next=what;
+}
+WP* new_wp(){
+	Assert(free_!=NULL, "No free watchpoint left\n");
+	WP* newWp = free_;
+	free_ = free_->next;
+	newWp->next = NULL;
+	//insert new watchpoint into headlist
+	if(head == NULL){
+		head = newWp;
+	}else{
+		insert(head,newWp);
+	}
+	return newWp;
+}
 
+void free_up(WP* wp){
+	flash(wp);
+	if(wp == head){
+		head=head->next;
+		wp->next=NULL;
+		insert(free_, wp);
+	}else{
+		WP* itea = head;
+		while(itea->next!=NULL){
+			if(itea->next==wp){
+				break;
+			}
+			itea=itea->next;
+		}
+		Assert(itea->next!=NULL, "this watchpoint is not used\n");
+		itea->next=itea->next->next;
+		wp->next=NULL;
+		insert(free_, wp);
+	}
+}
 
+void flash(WP* wp){
+	memset(wp->expr, 0, 32);
+	wp->value = 0;
+}
