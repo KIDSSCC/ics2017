@@ -32,6 +32,18 @@ void cpu_exec(uint64_t n) {
 
 #ifdef DEBUG
     /* TODO: check watchpoints here. */
+    WP* itea = getHead();
+    while(itea!=NULL){
+	    int errorType = 0;
+	    int currValue = expr(itea->expr, &errorType);
+	    if(currValue!=itea->value){
+		    itea->value = currValue;
+		    nemu_state = NEMU_STOP;
+		    printf("watchpoint:%d is triggered at 0x%08x, the expression is %s\n", itea->NO, cpu.eip, itea->expr);
+		    break;
+	    }
+	    itea = itea->next;
+    }
 
 #endif
 
