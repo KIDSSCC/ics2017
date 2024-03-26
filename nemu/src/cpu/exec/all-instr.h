@@ -15,3 +15,6 @@ make_EHelper(sub);
 make_EHelper(xor);
 make_EHelper(pop);
 make_EHelper(ret);
+
+//add.c
+make_EHelper(lea);
