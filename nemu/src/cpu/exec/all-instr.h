@@ -18,3 +18,4 @@ make_EHelper(ret);
 
 //add.c
 make_EHelper(lea);
+make_EHelper(and);
