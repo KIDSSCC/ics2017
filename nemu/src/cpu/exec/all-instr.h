@@ -28,6 +28,8 @@ make_EHelper(movsx);
 make_EHelper(test);
 make_EHelper(jcc);
 
+//add-longlong.c
+make_EHelper(adc);
 
 
 make_EHelper(or);
