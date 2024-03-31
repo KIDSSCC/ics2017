@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <am.h>
 #include <x86.h>
 
@@ -10,7 +9,6 @@ void _ioe_init() {
 }
 
 unsigned long _uptime() {
-	printf("I am here\n");
   return 5;
   unsigned long time = inl(RTC_PORT)-boot_time;
   return time;
