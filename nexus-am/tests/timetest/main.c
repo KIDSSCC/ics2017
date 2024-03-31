@@ -4,7 +4,7 @@
 int main(){
   _ioe_init();
   int sec = 1;
-  while (1) {
+  while (sec<100) {
     while(_uptime() < 1000 * sec){
 	    printf("wait\n");
     }
