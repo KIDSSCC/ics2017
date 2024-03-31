@@ -1,5 +1,6 @@
 #include "cpu/exec.h"
 
+
 make_EHelper(mov);
 
 make_EHelper(operand_size);
@@ -67,3 +68,5 @@ make_EHelper(sbb);
 //IOE
 make_EHelper(in);
 make_EHelper(out);
+
+make_EHelper(neg);
