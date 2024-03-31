@@ -1,7 +1,6 @@
 #include <am.h>
 #include <x86.h>
 
-#include <stdio.h>
 #define RTC_PORT 0x48   // Note that this is not standard
 static unsigned long boot_time;
 
@@ -10,7 +9,7 @@ void _ioe_init() {
 }
 
 unsigned long _uptime() {
-  //return 0;
+  return 0;
   unsigned long time = inl(RTC_PORT)-boot_time;
   return time;
 }
