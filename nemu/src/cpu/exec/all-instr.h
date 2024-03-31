@@ -71,3 +71,4 @@ make_EHelper(out);
 
 make_EHelper(neg);
 make_EHelper(mul);
+make_EHelper(cwtl);
