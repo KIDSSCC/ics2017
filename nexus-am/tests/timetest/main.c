@@ -7,7 +7,7 @@ int main(){
   while (1) {
 	  unsigned long curr = _uptime();
     while(curr < 1000 * sec){
-	   printf("I want to see _uptime() is: %d\n", curr);
+	   //printf("I want to see _uptime() is: %d\n", curr);
 	   curr = _uptime();
     }
     if (sec == 1) {
