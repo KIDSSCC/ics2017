@@ -9,7 +9,7 @@ void _ioe_init() {
 }
 
 unsigned long _uptime() {
-  return 5;
+  //return 5;
   unsigned long time = inl(RTC_PORT)-boot_time;
   return time;
 }
