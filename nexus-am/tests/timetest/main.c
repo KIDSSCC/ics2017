@@ -4,7 +4,11 @@
 int main(){
   _ioe_init();
   int sec = 1;
-  printf("sec is :%d\n", sec);
+  if(sec == 1){
+	  printf("Yes\n");
+  }else{
+	  printf("No\n");
+  }
   while (1) {
     while(_uptime() < 1000 * sec) ;
     if (sec == 1) {
