@@ -44,3 +44,6 @@ make_EHelper(inc);
 
 //fact.c
 make_EHelper(jmp);
+make_EHelper(imul1);
+make_EHelper(imul2);
+make_EHelper(imul3);
