@@ -4,6 +4,7 @@
 int main(){
   _ioe_init();
   int sec = 1;
+  printf("sec is :%d\n", sec);
   while (1) {
     while(_uptime() < 1000 * sec) ;
     if (sec == 1) {
