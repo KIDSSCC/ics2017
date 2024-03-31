@@ -1,6 +1,7 @@
 #include <am.h>
 #include <x86.h>
 
+#include <stdio.h>
 #define RTC_PORT 0x48   // Note that this is not standard
 static unsigned long boot_time;
 
