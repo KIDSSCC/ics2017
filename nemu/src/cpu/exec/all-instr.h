@@ -41,3 +41,6 @@ make_EHelper(not);
 
 //bubble-sort.c
 make_EHelper(inc);
+
+//fact.c
+make_EHelper(jmp);
