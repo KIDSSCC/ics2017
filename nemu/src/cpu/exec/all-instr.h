@@ -56,3 +56,6 @@ make_EHelper(idiv);
 make_EHelper(jmp_rm);
 make_EHelper(leave);
 make_EHelper(div);
+
+//recursion.c
+make_EHelper(call_rm);
