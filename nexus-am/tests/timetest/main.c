@@ -5,10 +5,10 @@ int main(){
   _ioe_init();
   int sec = 1;
   while (1) {
-	  unsigned long curr = 10;
+	  unsigned long curr = _uptime();
     while(curr < 1000 * sec){
 	   printf("I want to see _uptime() is: %d\n", curr);
-	   curr = 10;
+	   curr = _uptime();
     }
     if (sec == 1) {
       printf("%d second.\n", sec);
