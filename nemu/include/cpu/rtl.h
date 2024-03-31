@@ -12,6 +12,13 @@ static inline void rtl_li(rtlreg_t* dest, uint32_t imm) {
   *dest = imm;
 }
 
+static inline void rtl_rol(rtlreg_t* dest, const rtlreg_t* src1, const rtlreg_t* src2, int width) {
+	uint32_t eff = *src2 % (width * 8);
+	uint32_t low = ((*src1 & (((uint32_t)(0xFFFFFFFF) >> (32 - width * 8)) >> eff)) << (eff));
+	uint32_t up = ((*src1 & ((((uint32_t)(0xFFFFFFFF) >> (32 - width * 8)) >> (width * 8 - eff) << (width * 8 - eff)))) >> (width * 8 - eff));
+	*dest = low | up;
+}
+
 #define c_add(a, b) ((a) + (b))
 #define c_sub(a, b) ((a) - (b))
 #define c_and(a, b) ((a) & (b))
