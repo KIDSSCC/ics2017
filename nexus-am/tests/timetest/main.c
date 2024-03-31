@@ -4,13 +4,12 @@
 int main(){
   _ioe_init();
   int sec = 1;
-  if(sec == 1){
-	  printf("Yes\n");
-  }else{
-	  printf("No\n");
-  }
   while (1) {
-    while(_uptime() < 1000 * sec) ;
+	  unsigned long curr = _uptime();
+    while(curr < 1000 * sec){
+	   printf("I want to see _uptime() is: %lu\n", curr);
+	   curr = _uptime();
+    }
     if (sec == 1) {
       printf("%d second.\n", sec);
     } else {
