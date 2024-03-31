@@ -54,3 +54,4 @@ make_EHelper(idiv);
 
 //hello-str.c
 make_EHelper(jmp_rm);
+make_EHelper(leave);
