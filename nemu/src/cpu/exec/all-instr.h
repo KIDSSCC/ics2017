@@ -59,3 +59,6 @@ make_EHelper(div);
 
 //recursion.c
 make_EHelper(call_rm);
+
+//sub-longlong.c
+make_EHelper(sbb);
