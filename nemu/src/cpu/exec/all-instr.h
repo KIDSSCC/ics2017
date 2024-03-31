@@ -51,3 +51,6 @@ make_EHelper(imul3);
 //goldbach.c
 make_EHelper(cltd);
 make_EHelper(idiv);
+
+//hello-str.c
+make_EHelper(jmp_rm);
