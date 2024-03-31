@@ -62,3 +62,8 @@ make_EHelper(call_rm);
 
 //sub-longlong.c
 make_EHelper(sbb);
+
+
+//IOE
+make_EHelper(in);
+make_EHelper(out);
