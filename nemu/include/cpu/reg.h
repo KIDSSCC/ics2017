@@ -51,6 +51,11 @@ typedef struct {
 		unsigned int OF:1;
 		unsigned int :20;
 	}eflags;
+	struct IDTR{
+		uint32_t addr;
+		uint16_t length;
+	}idtr;
+	rtlreg_t cs;
 
   } CPU_state;
 

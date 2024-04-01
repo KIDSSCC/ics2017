@@ -3,8 +3,18 @@
 void diff_test_skip_qemu();
 void diff_test_skip_nemu();
 
+void raise_intr(uint8_t NO, vaddr_t ret_addr);
+
 make_EHelper(lidt) {
-  TODO();
+  //TODO();
+  t1 = id_dest->val;
+  rtl_lm(&t0, &t1, 2);
+  cpu.idtr.length = t0;
+  t1 = t1 + 2;
+  rtl_lm(&t0, &t1, 4);
+  cpu.idtr.addr = t0;
+  Log("idtr.length is 0x%x",cpu.idtr.length);
+  Log("idtr.addr id 0x%x",cpu.idtr.addr);
 
   print_asm_template1(lidt);
 }
@@ -26,7 +36,9 @@ make_EHelper(mov_cr2r) {
 }
 
 make_EHelper(int) {
-  TODO();
+  //TODO();
+  uint8_t NO=id_dest->val;
+  raise_intr(NO,decoding.seq_eip);
 
   print_asm("int %s", id_dest->str);
 
