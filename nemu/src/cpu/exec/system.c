@@ -50,6 +50,7 @@ make_EHelper(in) {
   operand_write(id_dest, &t0);
 
   print_asm_template2(in);
+  diff_test_skip_qemu();
 
 #ifdef DIFF_TEST
   diff_test_skip_qemu();
