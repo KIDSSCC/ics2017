@@ -163,8 +163,9 @@ void difftest_step(uint32_t eip) {
   if(diff){
 	  nemu_state = NEMU_END;
   }
+  printf("current eip is: %08x, and CF is: %d, ZF is: %d, SF is: %d, IF is: %d, OF is: %d\n", cpu.eip, cpu.eflags.CF&0x1, cpu.eflags.ZF&0x01, cpu.eflags.SF&0x01, cpu.eflags.IF&0x01, cpu.eflags.OF&0x01);
 
-  if (diff) {
-    nemu_state = NEMU_END;
-  }
+  //if (diff) {
+  //  nemu_state = NEMU_END;
+  //}
 }
