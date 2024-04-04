@@ -47,18 +47,18 @@ make_EHelper(cmp) {
   
   rtl_sub(&t2, &id_dest->val, &id_src->val);
   rtl_update_ZFSF(&t2, id_dest->width);
-  //fprintf(file, "updateZFSF is: %08x\n", t2);
+  fprintf(file, "updateZFSF is: %08x\n", t2);
   //set CF bit
   rtl_sltu(&t0, &id_dest->val, &id_src->val);
   rtl_set_CF(&t0);
-  //fprintf(file, "updateCF is: %08x\n", t0);
+  fprintf(file, "updateCF is: %08x\n", t0);
   //set OF bit
   rtl_xor(&t0, &id_dest->val, &id_src->val);
   rtl_xor(&t1, &id_dest->val, &t2);
   rtl_and(&t0, &t0, &t1);
   rtl_msb(&t0, &t0, id_dest->width);
   rtl_set_OF(&t0);
-  //fprintf(file, "updateOF is: %08x\n", t0);
+  fprintf(file, "updateOF is: %08x\n", t0);
   fclose(file);
 
   print_asm_template2(cmp);
