@@ -1,4 +1,5 @@
 #include "cpu/exec.h"
+#include <stdio.h>
 
 make_EHelper(add) {
   //TODO();
@@ -39,17 +40,25 @@ make_EHelper(sub) {
 
 make_EHelper(cmp) {
   //TODO();
+  FILE *file;
+  char *filename = "/home/kidsscc/ownlog.txt";
+  file = fopen(filename, "a");
+  fprintf(file, "id_dest.val is: %08x, id_src.val is: %08x\n", id_dest->val, id_src->val);
+  
   rtl_sub(&t2, &id_dest->val, &id_src->val);
   rtl_update_ZFSF(&t2, id_dest->width);
+  fprintf(file, "updateZFSF is: %08x\n", t2);
   //set CF bit
   rtl_sltu(&t0, &id_dest->val, &id_src->val);
   rtl_set_CF(&t0);
+  fprintf(file, "updateCF is: %08x\n", t0);
   //set OF bit
   rtl_xor(&t0, &id_dest->val, &id_src->val);
   rtl_xor(&t1, &id_dest->val, &t2);
   rtl_and(&t0, &t0, &t1);
   rtl_msb(&t0, &t0, id_dest->width);
   rtl_set_OF(&t0);
+  fprintf(file, "updateOF is: %08x\n", t0);
 
   print_asm_template2(cmp);
 }
