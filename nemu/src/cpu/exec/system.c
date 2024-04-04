@@ -1,5 +1,4 @@
 #include "cpu/exec.h"
-#include <stdio.h>
 
 void diff_test_skip_qemu();
 void diff_test_skip_nemu();
@@ -51,11 +50,6 @@ make_EHelper(in) {
   operand_write(id_dest, &t0);
 
   print_asm_template2(in);
-  FILE *file;
-  char *filename = "/home/kidsscc/ownlog.txt";
-  file = fopen(filename, "a");
-  fprintf(file, "current eip is: %08x, and CF is: %d, ZF is: %d, SF is: %d, IF is: %d, OF is: %d\n", cpu.eip, cpu.eflags.CF&0x1, cpu.eflags.ZF&0x01, cpu.eflags.SF&0x01, cpu.eflags.IF&0x01, cpu.eflags.OF&0x01);
-  fclose(file);
 
 
 #ifdef DIFF_TEST
