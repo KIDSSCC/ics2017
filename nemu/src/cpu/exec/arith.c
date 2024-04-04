@@ -40,10 +40,10 @@ make_EHelper(sub) {
 
 make_EHelper(cmp) {
   //TODO();
-  //FILE *file;
-  //char *filename = "/home/kidsscc/ownlog.txt";
-  //file = fopen(filename, "a");
-  //fprintf(file, "id_dest.val is: %08x, id_src.val is: %08x\n", id_dest->val, id_src->val);
+  FILE *file;
+  char *filename = "/home/kidsscc/ownlog.txt";
+  file = fopen(filename, "a");
+  fprintf(file, "id_dest.val is: %08x, id_src.val is: %08x\n", id_dest->val, id_src->val);
   
   rtl_sub(&t2, &id_dest->val, &id_src->val);
   rtl_update_ZFSF(&t2, id_dest->width);
@@ -59,6 +59,7 @@ make_EHelper(cmp) {
   rtl_msb(&t0, &t0, id_dest->width);
   rtl_set_OF(&t0);
   //fprintf(file, "updateOF is: %08x\n", t0);
+  fclose(file);
 
   print_asm_template2(cmp);
 }
