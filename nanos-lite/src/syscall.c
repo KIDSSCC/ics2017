@@ -9,6 +9,7 @@ void sys_exit(int i){
 }
 int sys_write(int fd, void* buf, size_t len){
 	if(fd==1||fd==2){
+		Log("buffer is: %s", (char*)buf);
 		char tmp;
 		for(int i=0;i<len;i++){
 			memcpy(&tmp, buf+i, 1);

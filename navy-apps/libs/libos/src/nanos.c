@@ -16,6 +16,8 @@ int _syscall_(int type, uintptr_t a0, uintptr_t a1, uintptr_t a2){
   asm volatile("int $0x80": "=a"(ret): "a"(type), "b"(a0), "c"(a1), "d"(a2));
   return ret;
 }
+extern char end;
+uintptr_t program_break = (uintptr_t)&end;
 
 void _exit(int status) {
   _syscall_(SYS_exit, status, 0, 0);
@@ -31,6 +33,15 @@ int _write(int fd, void *buf, size_t count){
 }
 
 void *_sbrk(intptr_t increment){
+	/*
+	uintptr_t new_end = program_break + increment;
+	int result = _syscall_(SYS_brk, new_end, 0, 0);
+	if(result == 0){
+		uintptr_t old = program_break;
+		program_break = new_end;
+		return (void*)old;
+	}
+	*/
   return (void *)-1;
 }
 
