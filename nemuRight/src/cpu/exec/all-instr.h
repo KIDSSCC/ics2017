@@ -1,22 +1,19 @@
 #include "cpu/exec.h"
 
-
 make_EHelper(mov);
-
+make_EHelper(push);
 make_EHelper(operand_size);
 
 make_EHelper(inv);
 make_EHelper(nemu_trap);
-
-
-// new function
+//dummy.c
 make_EHelper(call);
-make_EHelper(push);
+make_EHelper(pop);
 make_EHelper(sub);
 make_EHelper(xor);
-make_EHelper(pop);
 make_EHelper(ret);
 
+//阶段二
 //add.c
 make_EHelper(lea);
 make_EHelper(and);
@@ -27,49 +24,44 @@ make_EHelper(setcc);
 make_EHelper(movzx);
 make_EHelper(movsx);
 make_EHelper(test);
-make_EHelper(jcc);
-
 //add-longlong.c
+make_EHelper(jcc);
 make_EHelper(adc);
 make_EHelper(or);
 
 //bit.c
+make_EHelper(sar);
 make_EHelper(shl);
 make_EHelper(shr);
-make_EHelper(sar);
 make_EHelper(dec);
 make_EHelper(not);
-
 //bubble-sort.c
 make_EHelper(inc);
-
-//fact.c
+//fact
 make_EHelper(jmp);
 make_EHelper(imul1);
 make_EHelper(imul2);
 make_EHelper(imul3);
-
-//goldbach.c
+//goldbach
 make_EHelper(cltd);
 make_EHelper(idiv);
-
-//hello-str.c
+//hello-str
 make_EHelper(jmp_rm);
+//jmp指令的E9形式
 make_EHelper(leave);
 make_EHelper(div);
-
-//recursion.c
+//recursion
 make_EHelper(call_rm);
-
-//sub-longlong.c
+//sub-longlong
 make_EHelper(sbb);
 
 
-//IOE
+//阶段三
 make_EHelper(in);
 make_EHelper(out);
-
-make_EHelper(neg);
+//coreMark
 make_EHelper(mul);
 make_EHelper(cwtl);
+//microbench
+make_EHelper(neg);
 make_EHelper(rol);
