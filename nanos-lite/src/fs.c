@@ -22,8 +22,14 @@ static Finfo file_table[] __attribute__((used)) = {
 
 #define NR_FILES (sizeof(file_table) / sizeof(file_table[0]))
 
+int getWidth();
+int getHeight();
 void init_fs() {
   // TODO: initialize the size of /dev/fb
+  int width = getWidth();
+  int height = getHeight();
+  Log("in fs.c/init_fs, width is: %d, height is: %d", width, height);
+  file_table[3].size = width * height * sizeof(uint32_t);
 }
 
 extern void ramdisk_read(void *buf, off_t offset, size_t len);
@@ -41,6 +47,9 @@ int fs_open(const char* pathName, int flags, int mode){
 	return result;
 }
 
+void dispinfo_read(void* buf, off_t offset, size_t len);
+
+
 ssize_t fs_read(int fd, void* buf, size_t len){
 	int start = file_table[fd].disk_offset;
 	int curr_off = file_table[fd].open_offset;
@@ -49,11 +58,16 @@ ssize_t fs_read(int fd, void* buf, size_t len){
 	if(max>len){
 		max = len;
 	}
-	ramdisk_read(buf, start+curr_off, max);
+	if(fd==FD_DISPINFO){
+		dispinfo_read(buf, curr_off, max);
+	}else{
+		ramdisk_read(buf, start + curr_off, max);
+	}
 	file_table[fd].open_offset = curr_off + max;
 	return max;
 }
 
+void fb_write(const void* buf, off_t offset, size_t len);
 ssize_t fs_write(int fd, void * buf, size_t len){
 	int start = file_table[fd].disk_offset;
 	int curr_off = file_table[fd].open_offset;
@@ -62,7 +76,11 @@ ssize_t fs_write(int fd, void * buf, size_t len){
 	if(max>len){
 		max = len;
 	}
-	ramdisk_write(buf, start+curr_off, max);
+	if(fd==FD_FB){
+		fb_write(buf, curr_off, max);
+	}else{
+		ramdisk_write(buf, start + curr_off, max);
+	}
 	file_table[fd].open_offset = curr_off + max;
 	return max;
 }

@@ -53,3 +53,10 @@ int _read_key() {
   }
   return _KEY_NONE;
 }
+
+int getWidth(){
+	return _screen.width;
+}
+int getHeight(){
+	return _screen.height;
+}
