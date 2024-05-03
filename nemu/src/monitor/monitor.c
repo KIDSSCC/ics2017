@@ -45,7 +45,7 @@ static inline int load_default_img() {
   };
 
   Log("No image is given. Use the default build-in image.");
-
+  //把如上的指令copy到了用户空间地址0x100000处，中间还经历了一个用户guest_to_host的转换
   memcpy(guest_to_host(ENTRY_START), img, sizeof(img));
 
   return sizeof(img);
@@ -53,21 +53,28 @@ static inline int load_default_img() {
 
 static inline void load_img() {
   long size;
+  //image_file在参数解析的阶段被赋值为了命令行参数
+  //但是默认走if分支
   if (img_file == NULL) {
     size = load_default_img();
   }
   else {
     int ret;
 
+    //打开文件，rb参数，二进制文件，只读
     FILE *fp = fopen(img_file, "rb");
     Assert(fp, "Can not open '%s'", img_file);
 
     Log("The image is %s", img_file);
 
+    //定位文件读写指针到文件尾
     fseek(fp, 0, SEEK_END);
+    //size定位到了文件尾
     size = ftell(fp);
 
+    //定位文件读写指针到文件头
     fseek(fp, 0, SEEK_SET);
+    //将整个文件全部读入
     ret = fread(guest_to_host(ENTRY_START), size, 1, fp);
     assert(ret == 1);
 
@@ -82,9 +89,8 @@ static inline void load_img() {
 static inline void restart() {
   /* Set the initial instruction pointer. */
   cpu.eip = ENTRY_START;
-  unsigned int init = 2;
-  memcpy(&cpu.eflags, &init, sizeof(cpu.eflags));
-
+  unsigned int init=2;
+  memcpy(&cpu.eflags,&init,sizeof(cpu.eflags));
 #ifdef DIFF_TEST
   init_qemu_reg();
 #endif
@@ -93,6 +99,12 @@ static inline void restart() {
 static inline void parse_args(int argc, char *argv[]) {
   int o;
   while ( (o = getopt(argc, argv, "-bl:")) != -1) {
+      //解析编译时的编译选项-b和-l，其中-l需要有一个参数
+      /*
+       * -b选项：将is_batch_mode设置为真
+       * -l选项，将其附属的参数存至log_file中
+       * 当所有参数解析完成时，getopt函数返回1，正确的情况下应该走else分支，将参数存储值img_file
+       */
     switch (o) {
       case 'b': is_batch_mode = true; break;
       case 'l': log_file = optarg; break;

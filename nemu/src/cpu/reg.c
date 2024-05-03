@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+//结构体的定义在reg.h中
 CPU_state cpu;
 
 const char *regsl[] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
@@ -17,6 +18,7 @@ void reg_test() {
   int i;
   for (i = R_EAX; i <= R_EDI; i ++) {
     sample[i] = rand();
+    //给寄存器赋32位的值
     reg_l(i) = sample[i];
     assert(reg_w(i) == (sample[i] & 0xffff));
   }
