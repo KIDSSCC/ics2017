@@ -11,6 +11,26 @@ static const char *keyname[256] __attribute__((used)) = {
 };
 
 size_t events_read(void *buf, size_t len) {
+	char tmp[10];
+	bool whetherDown = false;
+	int key = _read_key();
+	if(key&0x8000){
+		key^=0x8000;
+		whetherDown = true;
+	}
+	if(key!=_KEY_NONE){
+		if(whetherDown){
+			sprintf(tmp, "%s, %s\n", "kd", keyname[key]);
+		}else{
+			sprintf(tmp, "%s, %s\n", "ku", keyname[key]);
+		}
+	}else{
+		sprintf(tmp, "t, %d\n", _uptime());
+	}
+	if(strlen(tmp)<=len){
+		strncpy((char*)buf, tmp, strlen(tmp));
+		return strlen(tmp);
+	}
   return 0;
 }
 
