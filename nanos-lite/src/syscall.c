@@ -5,7 +5,7 @@ extern int fs_open(const char* pathName, int flags, int mode);
 extern ssize_t fs_read(int fd, void* buf, size_t len);
 extern ssize_t fs_write(int fd, void * buf, size_t len);
 extern off_t fs_leek(int fd, off_t offset, int whence);
-extern int close(int fd);
+extern int fs_close(int fd);
 
 int sys_none(){
 	return 1;

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "fs.h"
 
 #define DEFAULT_ENTRY ((void *)0x4000000)
 

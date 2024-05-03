@@ -27,11 +27,11 @@ void init_fs() {
 }
 
 extern void ramdisk_read(void *buf, off_t offset, size_t len);
-extern void randisk_write(void *buf, off_t offset, size_t len);
+extern void ramdisk_write(void *buf, off_t offset, size_t len);
 
 int fs_open(const char* pathName, int flags, int mode){
 	int result = -1;
-	for(int i=0;i<NR_FILES, i++){
+	for(int i=0;i<NR_FILES; i++){
 		if(strcmp(pathName, file_table[i].name)==0){
 			result = i;
 			break;
