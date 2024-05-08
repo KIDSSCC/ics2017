@@ -5,16 +5,23 @@
  */
 #include <sys/types.h>
 #include <regex.h>
+#include <stdlib.h>
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
 
   /* TODO: Add more token types */
-  TK_DEC, TK_HEX, TK_REG,
-  TK_NEQ, TK_GEQ, TK_LEQ,
-  TK_MINUS, TK_DEREF,
-  TK_LS, TK_RS,
-  TK_AND, TK_OR,
+  TK_LB=255,TK_RB=254,
+  TK_NUM=253,
+  TK_NEGATIVE=252,
+  TK_0xNUM=251,
+  TK_REG=250,
+  TK_DERE=249,
+  TK_NEQ=248,
+  TK_AND=247,
+  TK_OR=246,
+  TK_NOT=245
+
 };
 
 static struct rule {
@@ -27,30 +34,20 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
-  {"\\*", '*'},
-  {"/", '/'},
-  {"%", '%'},
+  {"\\(", TK_LB},	// LB
+  {"\\)", TK_RB},	// RB
+  {"^0x[0-9a-fA-F]+", TK_0xNUM},	//0xNUM
+  {"^(0|[1-9][0-9]*)", TK_NUM},	//NUM
+  {"^\\$[a-z]+", TK_REG},	//REG
+  {"==", TK_EQ},	// equal
+  {"!=", TK_NEQ},	// nequal
+  {"&&", TK_AND},	// AND
+  {"\\|\\|", TK_OR},	//OR
   {"\\+", '+'},         // plus
-  {"-", '-'},
-  {"<<", TK_LS},
-  {">>", TK_RS},
-  {"\\(", '('},
-  {"\\)", ')'},
-  {"!=", TK_NEQ},
-  {">=", TK_GEQ},
-  {"<=", TK_LEQ},
-  {"==", TK_EQ},         // equal
-  {">", '>'},
-  {"<", '<'},
-  {"&&", TK_AND},
-  {"\\|\\|", TK_OR},
-  {"&", '&'},
-  {"\\|", '|'},
-  {"\\^", '^'},
-  {"!", '!'},
-  {"0[xX][0-9a-fA-F]+", TK_HEX},
-  {"[0-9]+", TK_DEC},
-  {"\\$(eax|ecx|edx|ebx|esp|ebp|esi|edi|eip|EAX|ECX|EDX|EBX|ESP|EBP|ESI|EDI|EIP)", TK_REG},
+  {"-", '-'},	//sub
+  {"\\*", '*'},	//mul
+  {"/", '/'},	//div
+  {"!", TK_NOT}	//NOT
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -90,10 +87,6 @@ static bool make_token(char *e) {
   nr_token = 0;
 
   while (e[position] != '\0') {
-    if (nr_token >= 32) {
-      Log("Too many tokens");
-      return false;
-    }
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
@@ -109,35 +102,70 @@ static bool make_token(char *e) {
          * of tokens, some extra actions should be performed.
          */
 
-        tokens[nr_token].type = rules[i].token_type;
         switch (rules[i].token_type) {
-          case '-':
-            if (nr_token == 0 || (tokens[nr_token - 1].type != TK_DEC && tokens[nr_token - 1].type != TK_HEX && tokens[nr_token - 1].type != TK_REG && tokens[nr_token - 1].type != ')')) {
-              tokens[nr_token].type = TK_MINUS;
-            }
-            break;
-          case '*':
-            if (nr_token == 0 || (tokens[nr_token - 1].type != TK_DEC && tokens[nr_token - 1].type != TK_HEX && tokens[nr_token - 1].type != TK_REG && tokens[nr_token - 1].type != ')')) {
-              tokens[nr_token].type = TK_DEREF;
-            }
-            break;
-          case TK_DEC:
-          case TK_HEX:
-          case TK_REG:
-            strncpy(tokens[nr_token].str, substr_start, substr_len);
-            tokens[nr_token].str[substr_len] = '\0';
-            break;
+		case '+':
+			tokens[nr_token++].type='+';
+			break;
+		case '-':
+			tokens[nr_token++].type='-';
+	                break;
+		case '*':
+			tokens[nr_token++].type='*';
+			break;
+		case '/':
+			tokens[nr_token++].type='/';
+			break;
+		case TK_EQ:
+			tokens[nr_token++].type=TK_EQ;
+			break;
+		case TK_NEQ:
+			tokens[nr_token++].type=TK_NEQ;
+			break;
+		case TK_AND:
+			tokens[nr_token++].type=TK_AND;
+			break;
+		case TK_OR:
+			tokens[nr_token++].type=TK_OR;
+			break;
+		case TK_LB:
+			tokens[nr_token++].type=TK_LB;
+			break;
+		case TK_RB:
+			tokens[nr_token++].type=TK_RB;
+			break;
+		case TK_NOT:
+			tokens[nr_token++].type=TK_NOT;
+			break;
+		case TK_NUM:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_NUM;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
+		case TK_0xNUM:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_0xNUM;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
+		case TK_REG:
+			Assert(substr_len<32,"the expr token is too long\n");
+			tokens[nr_token].type=TK_REG;
+			memcpy(tokens[nr_token].str, substr_start, substr_len);
+			memset(tokens[nr_token].str+substr_len, '\0', 1);
+			nr_token++;
+			break;
           default: break;
         }
-        if (rules[i].token_type != TK_NOTYPE) {
-          nr_token++;
-        }
+
         break;
       }
     }
 
     if (i == NR_REGEX) {
-      Log("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
+      printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
       return false;
     }
   }
@@ -145,215 +173,211 @@ static bool make_token(char *e) {
   return true;
 }
 
-bool check_parentheses(int p, int q, bool *success) {
-  // 返回值为true表示首尾括号相匹配， success为true表示表达式合法
-  int i, cnt = 0;
-  for (i = p; i <= q; i++) {
-    if (tokens[i].type == '(') {
-      cnt++;
-    } else if (tokens[i].type == ')') {
-      cnt--;
-    }
-    if (cnt < 0) {
-      *success = false;
-      return false;
-    }
-  }
-  if (cnt == 0) {
-    // 如果表达式合法，则继续判断首尾括号是否匹配
-    bool res = true;
-    if (tokens[p].type != '(' || tokens[q].type != ')') {
-      res = false;
-    } else {
-      for (i = p; i <= q; i++) {
-        if (tokens[i].type == '(') {
-          cnt++;
-        } else if (tokens[i].type == ')') {
-          cnt--;
-        }
-        if (cnt == 0 && i != q) {
-          res = false;
-          break;
-        }
-      }
-    }
-    return res;
-  } else {
-    *success = false;
-    return false;
-  }
+bool check_parentheses(int p, int q, int* errorType)
+{
+	if((tokens[p].type!=TK_LB)||(tokens[q].type!=TK_RB)){
+		return false;
+	}
+	int numOfBr = 0;
+	int theRightMatchForLeft = q;
+	for(int i=p; i<=q; i++){
+		if(tokens[i].type==TK_LB){
+			numOfBr++;
+		}else if(tokens[i].type==TK_RB){
+			if(numOfBr==1){
+				theRightMatchForLeft = i;
+			}
+			numOfBr--;
+			if(numOfBr<0){
+				*errorType=1;
+				return false;
+			}
+		}
+	}
+	if(theRightMatchForLeft!=q){
+		return false;
+	}
+	if(numOfBr!=0){
+		*errorType = 2;
+		return false;
+	}
+	return (int)true;
 }
 
-int dominant_operator(int p, int q) {
-  // 返回值为-1表示表达式不合法，否则返回值为表达式中优先级最低的运算符的位置
-  int i, cnt = 0, op = -1, op_priority = 0;
-  for (i = p; i <= q; i++) {
-    if (tokens[i].type == '(') {
-      cnt++;
-    } else if (tokens[i].type == ')') {
-      cnt--;
-    }
-    if (cnt == 0) {
-      if (tokens[i].type == TK_MINUS || tokens[i].type == TK_DEREF || tokens[i].type == '!') {
-        if (op_priority <= 0 && op == -1) {
-          op_priority = 0;
-          op = i;
-        }
-      } else if (tokens[i].type == '*' || tokens[i].type == '/' || tokens[i].type == '%') {
-        if (op_priority <= 1) {
-          op_priority = 1;
-          op = i;
-        }
-      } else if (tokens[i].type == '+' || tokens[i].type == '-') {
-        if (op_priority <= 2) {
-          op_priority = 2;
-          op = i;
-        }
-      } else if (tokens[i].type == TK_LS || tokens[i].type == TK_RS) {
-        if (op_priority <= 3) {
-          op_priority = 3;
-          op = i;
-        }
-      } else if (tokens[i].type == TK_GEQ || tokens[i].type == TK_LEQ || tokens[i].type == '>' || tokens[i].type == '<') {
-        if (op_priority <= 4) {
-          op_priority = 4;
-          op = i;
-        }
-      } else if (tokens[i].type == TK_EQ || tokens[i].type == TK_NEQ) {
-        if (op_priority <= 5) {
-          op_priority = 5;
-          op = i;
-        }
-      } else if (tokens[i].type == '&') {
-        if (op_priority <= 6) {
-          op_priority = 6;
-          op = i;
-        }
-      } else if (tokens[i].type == '^') {
-        if (op_priority <= 7) {
-          op_priority = 7;
-          op = i;
-        }
-      } else if (tokens[i].type == '|') {
-        if (op_priority <= 8) {
-          op_priority = 8;
-          op = i;
-        }
-      } else if (tokens[i].type == TK_AND) {
-        if (op_priority <= 9) {
-          op_priority = 9;
-          op = i;
-        }
-      } else if (tokens[i].type == TK_OR) {
-        if (op_priority <= 10) {
-          op_priority = 10;
-          op = i;
-        }
-      }
-    }
-  }
-  return op;
+uint32_t regJudge(char* name, int *errorType)
+{
+	if(strcmp(name, "$eip")==0){
+		return cpu.eip;
+	}
+	for(int i=0;i<8;i++){
+		if(strcmp(name+1, regsl[i])==0){
+			return reg_l(i);
+		}
+	}
+	for(int i=0;i<8;i++){
+		if(strcmp(name+1, regsw[i])==0){
+			return reg_w(i);
+		}
+	}
+	for(int i=0;i<8;i++){
+		if(strcmp(name+1, regsb[i])==0){
+			return reg_b(i);
+		}
+	}
+	*errorType=4;
+	return 0;
+}
+int confirmDomainOperator(int p, int q){
+	int numOfBr = 0;
+	int position = p-1;
+	for(int i=p;i<=q;i++){
+		if(tokens[i].type==TK_NUM){
+			continue;
+		}else if(tokens[i].type==TK_LB){
+			numOfBr++;
+		}else if(tokens[i].type==TK_RB){
+			numOfBr--;
+		}else if((tokens[i].type=='+')||(tokens[i].type=='-')||(tokens[i].type=='*')||(tokens[i].type=='/')||(tokens[i].type==TK_EQ)||(tokens[i].type==TK_NEQ)||(tokens[i].type==TK_AND)||(tokens[i].type==TK_OR)){
+			if(numOfBr!=0){
+				continue;
+			}
+			if(position==p-1){
+				position=i;
+			}else {
+				if((tokens[position].type==TK_EQ)||(tokens[position].type==TK_NEQ)||(tokens[position].type==TK_AND)||(tokens[position].type==TK_OR)){
+					if((tokens[i].type==TK_EQ)||(tokens[i].type==TK_NEQ)||(tokens[i].type==TK_AND)||(tokens[i].type==TK_OR)){
+						position = i;
+					}
+				}else if((tokens[position].type=='+')||(tokens[position].type=='-')){
+					if((tokens[i].type!='*')&&(tokens[i].type!='/')){
+						position = i;
+					}
+				}else{
+					position = i;
+				}
+			}
+		}
+	}
+	return position;
 }
 
-uint32_t eval(int p, int q, bool* success) {
-  if (*success == false) {
-    return -1;
-  } else if (p > q) {
-    Log("Bad expression");
-    *success = false;
-    return -1;
-  } else if (p == q) {
-    uint32_t val;
-    if (tokens[q].type == TK_DEC) {
-      sscanf(tokens[q].str, "%u", &val);
-    } else if (tokens[q].type == TK_HEX) {
-      sscanf(tokens[q].str, "%x", &val);
-    } else if (tokens[q].type == TK_REG) {
-      if (strcmp(tokens[q].str, "$eax") == 0 || strcmp(tokens[q].str, "$EAX") == 0) {
-        val = cpu.eax;
-      } else if (strcmp(tokens[q].str, "$ecx") == 0 || strcmp(tokens[q].str, "$ECX") == 0) {
-        val = cpu.ecx;
-      } else if (strcmp(tokens[q].str, "$edx") == 0 || strcmp(tokens[q].str, "$EDX") == 0) {
-        val = cpu.edx;
-      } else if (strcmp(tokens[q].str, "$ebx") == 0 || strcmp(tokens[q].str, "$EBX") == 0) {
-        val = cpu.ebx;
-      } else if (strcmp(tokens[q].str, "$esp") == 0 || strcmp(tokens[q].str, "$ESP") == 0) {
-        val = cpu.esp;
-      } else if (strcmp(tokens[q].str, "$ebp") == 0 || strcmp(tokens[q].str, "$EBP") == 0) {
-        val = cpu.ebp;
-      } else if (strcmp(tokens[q].str, "$esi") == 0 || strcmp(tokens[q].str, "$ESI") == 0) {
-        val = cpu.esi;
-      } else if (strcmp(tokens[q].str, "$edi") == 0 || strcmp(tokens[q].str, "$EDI") == 0) {
-        val = cpu.edi;
-      } else if (strcmp(tokens[q].str, "$eip") == 0 || strcmp(tokens[q].str, "$EIP") == 0) {
-        val = cpu.eip;
-      } else {
-        Log("Unknown register: %s", tokens[q].str);
-        *success = false;
-        return -1;
-      }
-    } else {
-      Log("Bad expression");
-      *success = false;
-      return -1;
-    }
-    return val;
-  } else if (check_parentheses(p, q, success)) {
-    return eval(p + 1, q - 1, success);
-  } else {
-    int op = dominant_operator(p, q);
-    if (op == -1) {
-      Log("Bad expression");
-      *success = false;
-      return -1;
-    } else if (tokens[op].type == TK_MINUS || tokens[op].type == TK_DEREF || tokens[op].type == '!') {
-      uint32_t val = eval(op + 1, q, success);
-      switch (tokens[op].type) {
-        case TK_MINUS: return -val;
-        case TK_DEREF: return vaddr_read(val, 4);
-        case '!': return !val;
-        default: Log("Unknown operator: %d", tokens[op].type); *success = false; return -1;
-      }
-    } else {
-      uint32_t val1 = eval(p, op - 1, success);
-      uint32_t val2 = eval(op + 1, q, success);
-      switch (tokens[op].type) {
-        case '+': return val1 + val2;
-        case '-': return val1 - val2;
-        case '*': return val1 * val2;
-        case '/': if (val2 == 0) {
-                    Log("Divided by zero");
-                    *success = false;
-                    return -1;
-                  }
-                  return val1 / val2;
-        case TK_EQ: return val1 == val2;
-        case TK_NEQ: return val1 != val2;
-        case TK_GEQ: return val1 >= val2;
-        case TK_LEQ: return val1 <= val2;
-        case '>': return val1 > val2;
-        case '<': return val1 < val2;
-        case TK_LS: return val1 << val2;
-        case TK_RS: return val1 >> val2;
-        case '&': return val1 & val2;
-        case '^': return val1 ^ val2;
-        case '|': return val1 | val2;
-        case TK_AND: return val1 && val2;
-        case TK_OR: return val1 || val2;
-        default: Log("Unknown operator: %d\n", tokens[op].type); *success = false; return -1;
-      }
-    }
-  }
+uint32_t eval(int p, int q, int *errorType)
+{
+	if(p > q){
+		*errorType = 1;
+		return 0;
+	}else if(p == q){
+		//curr position is a number
+		char * tmp;
+		if(tokens[p].type == TK_NUM){
+			return (int)strtol(tokens[p].str,&tmp,10);
+		}else if(tokens[p].type == TK_0xNUM){
+			return (int)strtol(tokens[p].str,&tmp,16);
+		}else if(tokens[p].type == TK_REG){
+			return (uint32_t)regJudge(tokens[p].str, errorType);
+		}
+	}else {
+		int tryToCheckParentheses = 0;
+		bool checkResult = check_parentheses(p, q, &tryToCheckParentheses);
+		if(tryToCheckParentheses==0){
+			//the tryToCheckParentheses==0,there were no fatal error in current expr
+			//current expr can continue to calculator according to the checkResult
+			if(checkResult){
+			       int result = eval(p+1, q-1, errorType);
+			       if(*errorType==0){
+				       return result;
+			       }else{
+				       return 0;
+			       }
+			}else {
+				//confirm dominant operator
+				//from p to q
+				int position = confirmDomainOperator(p, q);
+				if(position!=p-1){
+					//find a domain operator
+					int val1 = eval(p, position - 1, errorType);
+					if(*errorType!=0){
+						return 0;
+					}
+					int val2 = eval(position + 1, q, errorType);
+					if(*errorType!=0){
+						return 0;
+					}
+					switch(tokens[position].type){
+						case '+':return val1+val2;
+						case '-':return val1-val2;
+						case '*':return val1*val2;
+						case '/':return val1/val2;
+						case TK_EQ:return val1==val2?1:0;
+						case TK_NEQ:return val1!=val2?1:0;
+						case TK_AND:return val1*val2!=0?1:0;
+						case TK_OR:return ((val1==0)&&(val2==0))?0:1;
+					}
+				}else {
+					if(tokens[p].type==TK_NEGATIVE){
+						int val = eval(p+1, q, errorType);
+						if(*errorType!=0){
+							return 0;
+						}
+						return -val;
+					}else if(tokens[p].type==TK_DERE){
+						int val = eval(p+1, q, errorType);
+						if(*errorType!=0){
+							return 0;
+						}
+						if(val>=0x8000000){
+							*errorType=5;
+							return 0;
+						}
+						return vaddr_read(val, 4);
+					}else if(tokens[p].type==TK_NOT){
+						int val = eval(p+1, q, errorType);
+						if(*errorType!=0){
+							return 0;
+						}
+						return val==0?1:0;
+					}
+				}
+			}
+		}else{
+			//tryToCheckParentheses=1:RB more than LB
+			//tryToCheckParentheses=2:LB more than RB
+			*errorType=tryToCheckParentheses+1;
+			return 0;
+		}
+	}
+	return 0;
 }
 
-uint32_t expr(char *e, bool *success) {
+bool certainType(int type){
+	if((type!=TK_NUM)&&(type!=TK_RB)&&(type!=TK_REG)){
+		return true;
+	}
+	return false;
+}
+uint32_t expr(char *e, int *success) {
   if (!make_token(e)) {
-    *success = false;
+    *success = 1;
     return 0;
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  *success = true;
-
-  return eval(0, nr_token - 1, success);
+  //TODO();
+  for(int i=0;i<nr_token;i++){
+	  if((tokens[i].type=='-')&&(i==0||certainType(tokens[i-1].type))){
+		  tokens[i].type=TK_NEGATIVE;
+	  }
+	  if((tokens[i].type=='*')&&(i==0||certainType(tokens[i-1].type))){
+		  tokens[i].type=TK_DERE;
+	  }
+  }
+  int tryToEval = 0;
+  int result = eval(0, nr_token-1, &tryToEval);
+  if(tryToEval==0){
+	  return result;
+  }else{
+	  *success = result+1;
+	  return 0;
+  }
+  return 0;
 }

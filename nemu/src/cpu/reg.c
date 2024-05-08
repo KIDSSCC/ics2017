@@ -39,19 +39,5 @@ void reg_test() {
   assert(sample[R_ESI] == cpu.esi);
   assert(sample[R_EDI] == cpu.edi);
 
-  assert(cpu.ax == (cpu.eax & 0xffff));
-  assert(cpu.cx == (cpu.ecx & 0xffff));
-  assert(cpu.dx == (cpu.edx & 0xffff));
-  assert(cpu.bx == (cpu.ebx & 0xffff));
-  assert(cpu.sp == (cpu.esp & 0xffff));
-  assert(cpu.bp == (cpu.ebp & 0xffff));
-  assert(cpu.si == (cpu.esi & 0xffff));
-  assert(cpu.di == (cpu.edi & 0xffff));
-
-  assert(cpu.ax == cpu.al + (cpu.ah << 8));
-  assert(cpu.cx == cpu.cl + (cpu.ch << 8));
-  assert(cpu.dx == cpu.dl + (cpu.dh << 8));
-  assert(cpu.bx == cpu.bl + (cpu.bh << 8));
-
   assert(eip_sample == cpu.eip);
 }

@@ -36,6 +36,8 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_help(char *args);
+
 static int cmd_si(char *args);
 
 static int cmd_info(char *args);
@@ -48,8 +50,6 @@ static int cmd_w(char *args);
 
 static int cmd_d(char *args);
 
-static int cmd_help(char *args);
-
 static struct {
   char *name;
   char *description;
@@ -60,12 +60,12 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", "Step instructions in the program", cmd_si },
-  { "info", "Print the information of registers or watchpoints", cmd_info },
-  { "x", "Examine memory", cmd_x },
-  { "p", "Print the value of expression", cmd_p },
-  { "w", "Set a watchpoint", cmd_w },
-  { "d", "Delete a watchpoint", cmd_d },
+  { "si", "Run N instructions", cmd_si },
+  { "info", "print the information of reg or watchpoint", cmd_info},
+  { "x", "scan the memory", cmd_x},
+  { "p", "calculate the expr", cmd_p},
+  { "w", "set the watchpoint", cmd_w},
+  { "d", "delete the watchpoint", cmd_d},
 
 };
 
@@ -81,133 +81,138 @@ static int cmd_help(char *args) {
     for (i = 0; i < NR_CMD; i ++) {
       printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
     }
-  } else {
+  }
+  else {
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(arg, cmd_table[i].name) == 0) {
         printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
         return 0;
       }
     }
-    Log("Unknown command '%s'", arg);
+    printf("Unknown command '%s'\n", arg);
   }
   return 0;
 }
 
-static int cmd_si(char *args) {
-  int n = 1;
-  if (args != NULL) {
-    n = atoi(args);
-  }
-  cpu_exec(n);
-  return 0;
+static int cmd_si(char *args)
+{
+	char *arg = strtok(NULL, " ");
+	if(arg == NULL) {
+		cpu_exec(1);
+	} else {
+		char* tmp;
+		long value = strtol(arg, &tmp, 10);
+		cpu_exec(value);
+	}
+	return 0;
 }
 
-static int cmd_info(char *args) {
-  if (args == NULL) {
-    Log("Invalid arguments");
-    printf("info r - Print the information of registers\n");
-    printf("info w - Print the information of watchpoints\n");
-  } else if (strcmp(args, "r") == 0) {
-    printf("eax: 0x%08x\n", cpu.eax);
-    printf("ecx: 0x%08x\n", cpu.ecx);
-    printf("edx: 0x%08x\n", cpu.edx);
-    printf("ebx: 0x%08x\n", cpu.ebx);
-    printf("esp: 0x%08x\n", cpu.esp);
-    printf("ebp: 0x%08x\n", cpu.ebp);
-    printf("esi: 0x%08x\n", cpu.esi);
-    printf("edi: 0x%08x\n", cpu.edi);
-    printf("eip: 0x%08x\n", cpu.eip);
-  } else if (strcmp(args, "w") == 0) {
-    show_wp();
-  } else {
-    Log("Unknown command '%s'", args);
-    printf("info r - Print the information of registers\n");
-    printf("info w - Print the information of watchpoints\n");
-  }
-  return 0;
+static int cmd_info(char *args)
+{
+	char *arg = strtok(NULL, " ");
+	if(arg == NULL) {
+		printf("Without argument\n");
+		return 0;
+	} else {
+		if(strcmp(arg,"r") == 0) {
+			printf("----------register begin----------\n");
+			printf("eax: 0x%08x\t\t\tebx: 0x%08x\n", cpu.eax, cpu.ebx);
+			printf("ecx: 0x%08x\t\t\tedx: 0x%08x\n", cpu.ecx, cpu.edx);
+			printf("esp: 0x%08x\t\t\tebp: 0x%08x\n", cpu.esp, cpu.ebp);
+			printf("esi: 0x%08x\t\t\tedi: 0x%08x\n", cpu.esi, cpu.edi);
+			printf("eip: 0x%08x\n", cpu.eip);
+			printf("----------register end----------\n");
+			return 0;
+		} 
+		if(strcmp(arg, "w") == 0) {
+			printlist();
+			return 0;
+		}
+		printf("wrong arguments\n");
+		return 0;
+	}
 }
 
-static int cmd_x(char *args) {
-  int n = 0;
-  uint32_t expression;
-  if (args != NULL) {
-    args = strtok(args, " ");
-    n = atoi(args);
-    args += strlen(args) + 1;
-    if (*args != '\0') {
-      bool success = true;
-      expression = expr(args, &success);
-      if (success) {
-        for (int i = 0; i < n; i++) {
-          printf("0x%08x: 0x%08x\n", expression + i * 4, vaddr_read(expression + i * 4, 4));
-        }
-      } else {
-        Log("Invalid expression");
-        printf("x N EXPR - Examine memory\n");
-      }
-    } else {
-      Log("Invalid arguments");
-      printf("x N EXPR - Examine memory\n");
-    }
-  } else {
-    Log("Invalid arguments");
-    printf("x N EXPR - Examine memory\n");
-  }
-  return 0;
+static int cmd_x(char *args)
+{
+	char *N_char = strtok(NULL, " ");
+	char *expr_char = strtok(NULL, " ");
+	if((N_char == NULL)||(expr_char == NULL))
+	{
+		printf("wrong argument number\n");
+		return 0;
+	}
+	char *tmp;
+	int N = strtol(N_char, &tmp, 10);
+	//unsigned int start_address = strtol(expr_char, &tmp, 16);
+	unsigned int start_address = cmd_p(expr_char);
+	printf("----------memory begin----------\n");
+	for(int i = 0; i<4*N; i+=4)
+	{
+		unsigned int curr = start_address + i;
+		printf("0x%08x: ", curr);
+		printf("0x%08x\n", vaddr_read(curr, 4));
+	}
+	printf("----------memoey end----------\n");
+	return 0;
 }
 
-static int cmd_p(char *args) {
-  if (args != NULL) {
-    bool success = true;
-    uint32_t result = expr(args, &success);
-    if (success) {
-      printf("0x%08x\n", result);
-    } else {
-      Log("Invalid expression");
-      printf("p EXPR - Print the value of expression\n");
-    }
-  } else {
-    Log("Invalid arguments");
-    printf("p EXPR - Print the value of expression\n");
-  }
-  return 0;
+static int cmd_p(char *args){
+	char *arg = strtok(args, " ");
+	if(arg == NULL){
+		printf("without argument\n");
+		return 0;
+	}else{
+		int result = 0;
+		uint32_t value = expr(arg, &result);
+		/*
+		 * result=0:success;
+		 * result=1:make token error;
+		 * result=2:calculate failed p>q;
+		 * result=3:the right are more than left
+		 * result=4:the left are more than right
+		 */
+		if(result==0){
+			return value;
+		}else{
+			printf("error: ");
+			switch (result) {
+				case 1:
+					printf("make token error\n");
+					return 0;
+				case 2:
+					printf("calculate failed p>q\n");
+					return 0;
+				case 3:
+					printf("the right are more than left\n");
+					return 0;
+				case 4:
+					printf("the left are more than right\n");
+					return 0;
+				case 5:
+					printf("cannot find the reg\n");
+					return 0;
+				case 6:
+					printf("access memory out of bound\n");
+				default:return 0;
+			}
+			return 0;
+		}
+	}
+	return 0;
 }
-
-static int cmd_w(char *args) {
-  if (args != NULL) {
-    bool success = true;
-    uint32_t result = expr(args, &success);
-    if (success) {
-      WP* wp = new_wp();
-      strcpy(wp->expr, args);
-      wp->value = result;
-      printf("Watchpoint %d: %s (0x%08x)\n", wp->NO, wp->expr, wp->value);
-    } else {
-      Log("Invalid expression");
-      printf("w EXPR - Set a watchpoint\n");
-    }
-  } else {
-    Log("Invalid arguments");
-    printf("w EXPR - Set a watchpoint\n");
-  }
-  return 0;
+static int cmd_w(char *args){
+	WP* newWP = new_wp();
+	strcpy(newWP->expr, args);
+	newWP->value = cmd_p(args);
+	return 0;
 }
-
-static int cmd_d(char *args) {
-  if (args != NULL) {
-    int n = atoi(args);
-    WP* wp = get_wp(n);
-    if (wp != NULL) {
-      free_wp(wp);
-      printf("Watchpoint %d deleted\n", n);
-    } else {
-      Log("No such watchpoint");
-    }
-  } else {
-    Log("Invalid arguments");
-    printf("d N - Delete a watchpoint\n");
-  }
-  return 0;
+static int cmd_d(char *args){
+	char *N_char = strtok(args, " ");
+	char *tmp;
+	int N = strtol(N_char, &tmp, 10);
+	free_watchpoint(N);
+	return 0;
 }
 
 void ui_mainloop(int is_batch_mode) {
@@ -240,7 +245,15 @@ void ui_mainloop(int is_batch_mode) {
     int i;
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
-        if (cmd_table[i].handler(args) < 0) { return; }
+	      int result=cmd_table[i].handler(args);
+	      if(strcmp("p", cmd_table[i].name)==0){
+		      printf("%d\n", (uint32_t)result);
+	      }else{
+		      if(result<0){
+			      return ;
+		      }
+	      }
+        //if (cmd_table[i].handler(args) < 0) { return; }
         break;
       }
     }
