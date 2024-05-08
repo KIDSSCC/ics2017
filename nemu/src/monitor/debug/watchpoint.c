@@ -19,84 +19,89 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
-void insert(WP* from, WP* what){
-	WP* itea=from;
-	while(itea->next!=NULL){
-		itea=itea->next;
-	}
-	itea->next=what;
-}
+
 WP* new_wp(){
-	Assert(free_!=NULL, "No free watchpoint left\n");
-	WP* newWp = free_;
-	free_ = free_->next;
-	newWp->next = NULL;
-	//insert new watchpoint into headlist
-	if(head == NULL){
-		head = newWp;
-	}else{
-		insert(head,newWp);
-	}
-	return newWp;
+  if(free_ == NULL){
+    Log("No free watchpoint");
+    return NULL;
+  }
+  WP* new = free_;
+  free_ = free_->next;
+  new->next = head;
+  head = new;
+  new->enable = true;
+  return new;
 }
 
-void free_up(WP* wp){
-	flash(wp);
-	if(wp == head){
-		head=head->next;
-		wp->next=NULL;
-		insert(free_, wp);
-	}else{
-		WP* itea = head;
-		while(itea->next!=NULL){
-			if(itea->next==wp){
-				break;
-			}
-			itea=itea->next;
-		}
-		Assert(itea->next!=NULL, "this watchpoint is not used\n");
-		itea->next=itea->next->next;
-		wp->next=NULL;
-		insert(free_, wp);
-	}
+
+void free_wp(WP* wp){
+  WP* p = head;
+  if(p == wp){
+    head = head->next;
+    wp->next = free_;
+    free_ = wp;
+    wp->enable = false;
+    return;
+  }
+  while(p->next != NULL){
+    if(p->next == wp){
+      p->next = wp->next;
+      wp->next = free_;
+      free_ = wp;
+      wp->enable = false;
+      return;
+    }
+    p = p->next;
+  }
+  Log("No such watchpoint");
 }
 
-void flash(WP* wp){
-	memset(wp->expr, 0, 32);
-	wp->value = 0;
+void show_wp() {
+    if (head == NULL) {
+      printf("No watchpoint set.\n");
+      return;
+    }
+
+    // printf(" NO | Enable | Expression                       | Initial Value\n");
+    // printf("----+--------+----------------------------------+--------------\n");
+    printf(" NO | Expression                       | Initial Value\n");
+    printf("----+----------------------------------+--------------\n");
+    
+    // for (int i = 0; i < NR_WP; ++i) {
+    //   printf("%3d | %-6s | %-32s | 0x%08x\n", wp_pool[i].NO, wp_pool[i].enable ? "Yes" : "No", wp_pool[i].expr, wp_pool[i].value);
+    // }
+    for (int i = 0; i < NR_WP; ++i) {
+      if (wp_pool[i].enable) {
+        printf("%3d | %-32s | 0x%08x\n", wp_pool[i].NO, wp_pool[i].expr, wp_pool[i].value);
+      }
+    }
 }
 
-WP* getHead(){
-	return head;
-}
-void free_watchpoint(int n){
-	if((n<0)||(n>NR_WP)){
-		printf("out of range");
-	}else{
-		free_up(&wp_pool[n]);
-	}
-}
-void printlist(){
-	printf("freelist: ");
-	WP* itea = free_;
-	while(itea!=NULL){
-		printf("%d ", itea->NO);
-		itea = itea->next;
-	}
-	printf("\n");
-	printf("Uselist: ");
-	itea = head;
-	while(itea!=NULL){
-		printf("%d ", itea->NO);
-		itea = itea->next;
-	}
-	printf("\n");
-	itea = head;
-	while(itea!=NULL){
-		printf("No:%d,expr is %s,the value is %d\n",itea->NO,itea->expr,itea->value);
-		itea = itea->next;
-	}
+WP* get_wp(int NO){
+  WP* p = head;
+  while(p != NULL){
+    if(p->NO == NO){
+      return p;
+    }
+    p = p->next;
+  }
+  return NULL;
 }
 
-	
-
+bool check_wp() {
+  WP* p = head;
+  bool success = true;
+  bool changed = false;
+  while(p != NULL){
+    uint32_t new_value = expr(p->expr, &success);
+    if(new_value != p->value){
+      printf("Watchpoint %d: %s\n", p->NO, p->expr);
+      printf("Old value = 0x%08x\n", p->value);
+      printf("New value = 0x%08x\n", new_value);
+      p->value = new_value;
+      changed = true;
+    }
+    p = p->next;
+  }
+  return changed;
+}

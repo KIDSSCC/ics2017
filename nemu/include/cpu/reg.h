@@ -15,49 +15,96 @@ enum { R_AL, R_CL, R_DL, R_BL, R_AH, R_CH, R_DH, R_BH };
  */
 
 typedef struct {
-  /*struct {
-    uint32_t _32;
-    uint16_t _16;
-    uint8_t _8[2];
-  } gpr[8];*/
-
+  union {
+    union {
+      uint32_t _32;
+      uint16_t _16;
+      uint8_t _8[2];
+    } gpr[8];
+    union {
+      struct {
+        union {
+          rtlreg_t eax;
+          uint16_t ax;
+          struct {
+            uint8_t al, ah;
+          };
+        };
+        union {
+          rtlreg_t ecx;
+          uint16_t cx;
+          struct {
+            uint8_t cl, ch;
+          };
+        };
+        union {
+          rtlreg_t edx;
+          uint16_t dx;
+          struct {
+            uint8_t dl, dh;
+          };
+        };
+        union {
+          rtlreg_t ebx;
+          uint16_t bx;
+          struct {
+            uint8_t bl, bh;
+          };
+        };
+        union {
+          rtlreg_t esp;
+          uint16_t sp;
+        };
+        union {
+          rtlreg_t ebp;
+          uint16_t bp;
+        };
+        union {
+          rtlreg_t esi;
+          uint16_t si;
+        };
+        union {
+          rtlreg_t edi;
+          uint16_t di;
+        };
+      };
+    };
+  };
   /* Do NOT change the order of the GPRs' definitions. */
 
   /* In NEMU, rtlreg_t is exactly uint32_t. This makes RTL instructions
    * in PA2 able to directly access these registers.
    */
-  //rtlreg_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
-  union {
-	union {
-		uint32_t _32;
-		uint16_t _16;
-		uint8_t _8[2];
-	} gpr[8];
-	struct {
-		rtlreg_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
-	};
-			      };
-	vaddr_t eip;
-	//eflags 32bits
-	struct{
-		unsigned int CF:1;
-		unsigned int one:1;
-		unsigned int :4;
-		unsigned int ZF:1;
-		unsigned int SF:1;
-		unsigned int :1;
-		unsigned int IF:1;
-		unsigned int :1;
-		unsigned int OF:1;
-		unsigned int :20;
-	}eflags;
-	struct IDTR{
-		uint32_t addr;
-		uint16_t length;
-	}idtr;
-	rtlreg_t cs;
+  // rtlreg_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
 
-  } CPU_state;
+  vaddr_t eip;
+
+  union {
+    struct {
+      uint32_t CF:1;
+      uint32_t :5;
+      uint32_t ZF:1;
+      uint32_t SF:1;
+      uint32_t :1;
+      uint32_t IF:1;
+      uint32_t :1;
+      uint32_t OF:1;
+      uint32_t :21;
+    };
+    uint32_t val;
+  } eflags;
+
+  uint32_t cs;
+  
+  union {
+    struct {
+      uint16_t limit;
+      uint32_t base;
+    };
+    uint32_t val;
+  } idtr;
+
+} CPU_state;
 
 extern CPU_state cpu;
 

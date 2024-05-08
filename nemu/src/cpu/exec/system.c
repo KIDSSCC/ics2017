@@ -3,18 +3,9 @@
 void diff_test_skip_qemu();
 void diff_test_skip_nemu();
 
-void raise_intr(uint8_t NO, vaddr_t ret_addr);
-
 make_EHelper(lidt) {
-  //TODO();
-  t1 = id_dest->val;
-  rtl_lm(&t0, &t1, 2);
-  cpu.idtr.length = t0;
-  t1 = t1 + 2;
-  rtl_lm(&t0, &t1, 4);
-  cpu.idtr.addr = t0;
-  Log("idtr.length is 0x%x",cpu.idtr.length);
-  Log("idtr.addr id 0x%x",cpu.idtr.addr);
+  cpu.idtr.limit = vaddr_read(id_dest->addr, 2);
+  cpu.idtr.base = vaddr_read(id_dest->addr + 2, 4);
 
   print_asm_template1(lidt);
 }
@@ -35,10 +26,10 @@ make_EHelper(mov_cr2r) {
 #endif
 }
 
+void raise_intr(uint8_t NO, vaddr_t ret_addr);
+
 make_EHelper(int) {
-  //TODO();
-  uint8_t NO=id_dest->val;
-  raise_intr(NO,decoding.seq_eip);
+  raise_intr(id_dest->val, *eip);
 
   print_asm("int %s", id_dest->str);
 
@@ -48,14 +39,11 @@ make_EHelper(int) {
 }
 
 make_EHelper(iret) {
-  //TODO();
-  rtl_pop(&cpu.eip);
+  rtl_pop(&decoding.jmp_eip);
   rtl_pop(&cpu.cs);
-  rtl_pop(&t0);
-  memcpy(&cpu.eflags,&t0, sizeof(cpu.eflags));
+  rtl_pop(&cpu.eflags.val);
 
-  decoding.jmp_eip = 1;
-  decoding.seq_eip = cpu.eip;
+  decoding.is_jmp = 1;
 
   print_asm("iret");
 }
@@ -64,8 +52,7 @@ uint32_t pio_read(ioaddr_t, int);
 void pio_write(ioaddr_t, int, uint32_t);
 
 make_EHelper(in) {
-  //TODO();
-  rtl_li(&t0, pio_read(id_src->val, id_dest->width));
+  t0 = pio_read(id_src->val, id_dest->width);
   operand_write(id_dest, &t0);
 
   print_asm_template2(in);
@@ -76,8 +63,8 @@ make_EHelper(in) {
 }
 
 make_EHelper(out) {
-  //TODO();
-  pio_write(id_dest->val, id_src->width, id_src->val);
+  pio_write(id_dest->val, id_dest->width, id_src->val);
+  // printf("out: %c -> Port: 0x%x\n", id_src->val, id_dest->val);
 
   print_asm_template2(out);
 

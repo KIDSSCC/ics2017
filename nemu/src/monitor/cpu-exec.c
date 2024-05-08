@@ -1,9 +1,6 @@
 #include "nemu.h"
 #include "monitor/monitor.h"
 
-#include "monitor/watchpoint.h"
-#include "monitor/expr.h"
-
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
  * This is useful when you use the `si' command.
@@ -14,6 +11,8 @@
 int nemu_state = NEMU_STOP;
 
 void exec_wrapper(bool);
+
+extern bool check_wp();
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
@@ -32,17 +31,8 @@ void cpu_exec(uint64_t n) {
 
 #ifdef DEBUG
     /* TODO: check watchpoints here. */
-    WP* itea = getHead();
-    while(itea!=NULL){
-	    int errorType = 0;
-	    int currValue = expr(itea->expr, &errorType);
-	    if(currValue!=itea->value){
-		    itea->value = currValue;
-		    nemu_state = NEMU_STOP;
-		    printf("watchpoint:%d is triggered at 0x%08x, the expression is %s\n", itea->NO, cpu.eip, itea->expr);
-		    break;
-	    }
-	    itea = itea->next;
+    if(check_wp()){
+      break;
     }
 
 #endif

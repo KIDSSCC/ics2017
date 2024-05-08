@@ -1,82 +1,66 @@
 #include "cpu/exec.h"
 
-
-make_EHelper(mov);
-
-make_EHelper(operand_size);
-
-make_EHelper(inv);
-make_EHelper(nemu_trap);
-
-
-// new function
-make_EHelper(call);
-make_EHelper(push);
-make_EHelper(sub);
-make_EHelper(xor);
-make_EHelper(pop);
-make_EHelper(ret);
-
-//add.c
-make_EHelper(lea);
-make_EHelper(and);
-make_EHelper(nop);
+// include Arithmetic instructions
 make_EHelper(add);
+make_EHelper(sub);
 make_EHelper(cmp);
-make_EHelper(setcc);
-make_EHelper(movzx);
-make_EHelper(movsx);
-make_EHelper(test);
-make_EHelper(jcc);
-
-//add-longlong.c
-make_EHelper(adc);
-make_EHelper(or);
-
-//bit.c
-make_EHelper(shl);
-make_EHelper(shr);
-make_EHelper(sar);
-make_EHelper(dec);
-make_EHelper(not);
-
-//bubble-sort.c
 make_EHelper(inc);
-
-//fact.c
-make_EHelper(jmp);
+make_EHelper(dec);
+make_EHelper(neg);
+make_EHelper(adc);
+make_EHelper(sbb);
+make_EHelper(mul);
 make_EHelper(imul1);
 make_EHelper(imul2);
 make_EHelper(imul3);
-
-//goldbach.c
-make_EHelper(cltd);
+make_EHelper(div);
 make_EHelper(idiv);
 
-//hello-str.c
+// include Control Transfer instructions
+make_EHelper(jmp);
+make_EHelper(jcc);
 make_EHelper(jmp_rm);
-make_EHelper(leave);
-make_EHelper(div);
-
-//recursion.c
+make_EHelper(call);
+make_EHelper(ret);
 make_EHelper(call_rm);
 
-//sub-longlong.c
-make_EHelper(sbb);
-
-
-//IOE
-make_EHelper(in);
-make_EHelper(out);
-
-make_EHelper(neg);
-make_EHelper(mul);
-make_EHelper(cwtl);
-make_EHelper(rol);
-
-//PA3
-make_EHelper(lidt);
-make_EHelper(int);
+// include Data Transfer instructions
+make_EHelper(mov);
+make_EHelper(push);
+make_EHelper(pop);
 make_EHelper(pusha);
 make_EHelper(popa);
+make_EHelper(leave);
+make_EHelper(cltd);
+make_EHelper(cwtl);
+make_EHelper(movsx);
+make_EHelper(movzx);
+make_EHelper(lea);
+
+// include Logical instructions
+make_EHelper(test);
+make_EHelper(and);
+make_EHelper(xor);
+make_EHelper(or);
+make_EHelper(sar);
+make_EHelper(shl);
+make_EHelper(shr);
+make_EHelper(setcc);
+make_EHelper(not);
+
+// include Prefix instructions
+make_EHelper(operand_size);
+
+// include Special instructions
+make_EHelper(nop);
+make_EHelper(inv);
+make_EHelper(nemu_trap);
+
+// include System instructions
+make_EHelper(lidt);
+make_EHelper(mov_r2cr);
+make_EHelper(mov_cr2r);
+make_EHelper(int);
 make_EHelper(iret);
+make_EHelper(in);
+make_EHelper(out);
