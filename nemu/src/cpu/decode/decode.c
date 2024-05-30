@@ -319,3 +319,11 @@ void operand_write(Operand *op, rtlreg_t* src) {
 make_DHelper(lidt_a){
 	decode_op_a(eip,id_dest,true);
 }
+
+make_DHelper(mov_loadCR){
+	decode_op_rm(eip,id_dest,false,id_src,false);
+}
+
+make_DHelper(mov_storeCR){
+	decode_op_rm(eip,id_src,true,id_dest,false);
+}

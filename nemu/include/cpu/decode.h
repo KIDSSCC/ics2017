@@ -113,5 +113,8 @@ make_DHelper(out_a2I);
 make_DHelper(out_a2dx);
 
 make_DHelper(lidt_a);
+// in PA4
+make_DHelper(mov_loadCR);
+make_DHelper(mov_storeCR);
 
 #endif

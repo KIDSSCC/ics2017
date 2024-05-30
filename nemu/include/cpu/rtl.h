@@ -220,4 +220,20 @@ static inline void rtl_update_ZFSF(const rtlreg_t* result, int width) {
   rtl_update_SF(result, width);
 }
 
+static inline void rtl_loadCR(rtlreg_t* dest, int no){
+	if(no==0){
+		*dest = cpu.CR0;
+	}else{
+		*dest = cpu.CR3;
+	}
+}
+
+static inline void rtl_storeCR(rtlreg_t* reg, int no){
+	if(no==0){
+		cpu.CR0 = *reg;
+	}else{
+		cpu.CR3 = *reg;
+	}
+}
+
 #endif
