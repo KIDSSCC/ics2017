@@ -66,6 +66,20 @@ void _switch(_Protect *p) {
 }
 
 void _map(_Protect *p, void *va, void *pa) {
+	uint32_t *pgdir=p->ptr;
+	uint32_t dir_index=(uint32_t)va>>22;
+	uint32_t pt_index=(uint32_t)va>>12&0x3ff;
+
+	if((pgdir[dir_index]&PTE_P)==0){
+		pgdir[dir_index]=(uint32_t)(palloc_f());
+		pgdir[dir_index]=pgdir[dir_index]|PTE_P;
+		for(int i=0;i<NR_PTE;i++){
+			((uint32_t *)(pgdir[dir_index]))[i] = 0;
+		}
+	}
+	uint32_t ptbase=(uint32_t)pgdir[dir_index]&0xfffff000;
+	*(uint32_t*)(ptbase+pt_index*4)=(uint32_t)pa;
+	*(uint32_t*)(ptbase+pt_index*4)=*(uint32_t*)(ptbase+pt_index*4)|PTE_P;
 }
 
 void _unmap(_Protect *p, void *va) {

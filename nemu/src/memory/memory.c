@@ -1,5 +1,6 @@
 #include "nemu.h"
 #include "device/mmio.h"
+#include "memory/mmu.h"
 
 #define PMEM_SIZE (128 * 1024 * 1024)
 
@@ -32,10 +33,60 @@ void paddr_write(paddr_t addr, int len, uint32_t data) {
   }
 }
 
+paddr_t page_translate(vaddr_t vaddr, bool is_write){
+	uint32_t dir_index = vaddr >>22;
+	uint32_t pt_index=vaddr>>12&0x3ff;
+	uint32_t offset=vaddr&0xfff;
+
+	paddr_t paddr=vaddr;
+	if(cpu.CR0 &0x80000000){
+		PDE pde=(PDE)paddr_read((uint32_t)(cpu.CR3+4*dir_index),4);
+		Assert(pde.present,"addr=0x%x",vaddr);
+		pde.accessed=1;
+
+		uint32_t PTbase=pde.val&0xFFFFF000;
+		PTE pte=(PTE)paddr_read((uint32_t)(PTbase+4*pt_index),4);
+		Assert(pte.present,"addr=0x%x",vaddr);
+		pte.accessed=1;
+
+		uint32_t pgbase=pte.val&0xFFFFF000;
+		paddr=pgbase+offset;
+		if(is_write){
+			pte.dirty=1;
+		}
+	}
+	return paddr;
+}
+
 uint32_t vaddr_read(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+	uint32_t curr_offset=addr&0xfff;
+	if(len>0x1000-curr_offset){
+		int len1=0x1000-curr_offset;
+		int len2=len-len1;
+		paddr_t paddr1=page_translate(addr,false);
+		paddr_t paddr2=page_translate(addr+len1,false);
+		uint32_t data1=paddr_read(paddr1,len1);
+		uint32_t data2=paddr_read(paddr2,len2);
+		return (data2<<(len1*8))+data1;
+	}else{
+		paddr_t paddr=page_translate(addr,false);
+		return paddr_read(paddr, len);
+	}
 }
 
 void vaddr_write(vaddr_t addr, int len, uint32_t data) {
-  paddr_write(addr, len, data);
+	uint32_t curr_offset=addr&0xfff;
+	if(len>0x1000-curr_offset){
+		int len1=0x1000-curr_offset;
+		int len2=len-len1;
+		paddr_t paddr1=page_translate(addr,false);
+		paddr_t paddr2=page_translate(addr+len1,false);
+
+		paddr_write(paddr1,len1,data);
+		data=data>>(len1*8);
+		paddr_write(paddr2,len2,data);
+	}else{
+		paddr_t paddr=page_translate(addr,true);
+		paddr_write(paddr, len, data);
+	}
 }
