@@ -30,7 +30,7 @@ int current_game;
 _RegSet* schedule(_RegSet *prev) {
 	current->tf = prev;
 	static int count=0;
-	if(current==&pcb[current_game]){
+	if(current==&pcb[0]){
 		if(count==2000){
 			current=&pcb[1];
 			count=0;
@@ -38,7 +38,7 @@ _RegSet* schedule(_RegSet *prev) {
 			count++;
 		}
 	}else{
-		current=&pcb[current_game];
+		current=&pcb[0];
 	}
 	_switch(&current->as);
 	return current->tf;
