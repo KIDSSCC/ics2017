@@ -86,5 +86,26 @@ void _unmap(_Protect *p, void *va) {
 }
 
 _RegSet *_umake(_Protect *p, _Area ustack, _Area kstack, void *entry, char *const argv[], char *const envp[]) {
-  return NULL;
+	//envp,argv
+	*(uint32_t*)(ustack.end-4)=0;
+	*(uint32_t*)(ustack.end-8)=0;
+	//_start函数参数与返回地址
+	*(uint32_t*)(ustack.end-12)=0;
+	*(uint32_t*)(ustack.end-16)=0;
+	//_RegSet中断帧
+	*(uint32_t*)(ustack.end-20)=2|FL_IF;
+	*(uint32_t*)(ustack.end-24)=8;
+	*(uint32_t*)(ustack.end-28)=(uint32_t)entry;
+	*(uint32_t*)(ustack.end-32)=0;
+	*(uint32_t*)(ustack.end-36)=0x81;
+	// register
+	*(uint32_t*)(ustack.end-40)=0;
+	*(uint32_t*)(ustack.end-44)=0;
+	*(uint32_t*)(ustack.end-48)=0;
+	*(uint32_t*)(ustack.end-52)=0;
+	*(uint32_t*)(ustack.end-56)=0;
+	*(uint32_t*)(ustack.end-60)=0;
+	*(uint32_t*)(ustack.end-64)=0;
+	*(uint32_t*)(ustack.end-68)=0;
+	return (_RegSet*)(ustack.end - 68);
 }
