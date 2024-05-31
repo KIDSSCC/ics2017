@@ -30,7 +30,9 @@ int current_game;
 _RegSet* schedule(_RegSet *prev) {
 	printf("in schedule/n");
 	current->tf = prev;
-	static int count=0;
+	//static int count=0;
+	current = (current == &pcb[0]?&pcb[1]:&pcb[0]);
+	/*
 	if(current==&pcb[0]){
 		if(count==2000){
 			current=&pcb[1];
@@ -42,6 +44,7 @@ _RegSet* schedule(_RegSet *prev) {
 	}else{
 		current=&pcb[0];
 	}
+	*/
 	_switch(&current->as);
 	return current->tf;
 }
