@@ -7,6 +7,8 @@ extern ssize_t fs_write(int fd, void * buf, size_t len);
 extern off_t fs_leek(int fd, off_t offset, int whence);
 extern int fs_close(int fd);
 
+extern int mm_brk(uint32_t new_brk);
+
 int sys_none(){
 	return 1;
 }
@@ -29,7 +31,7 @@ int sys_write(int fd, void* buf, size_t len){
 	return -1;
 }
 int sys_brk(int addr){
-	return 0;
+	return mm_brk((uint32_t)addr);
 }
 
 int sys_open(const char* name){
