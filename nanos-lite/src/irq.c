@@ -12,7 +12,7 @@ static _RegSet* do_event(_Event e, _RegSet* r) {
 		  printf("system trap\n");
 		  return schedule(r);
 	  case _EVENT_IRQ_TIME:
-		  Log("time event\n");
+		  //Log("time event\n");
 		  return schedule(r);
     default: panic("Unhandled event ID = %d", e.event);
   }
