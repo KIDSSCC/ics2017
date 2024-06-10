@@ -32,7 +32,7 @@ _RegSet* schedule(_RegSet *prev) {
 	current->tf = prev;
 	static int count=0;
 	if(current==&pcb[0]){
-		if(count==2000){
+		if(count==20){
 			current=&pcb[1];
 			count=0;
 		}else{
