@@ -28,6 +28,7 @@ void load_prog(const char *filename) {
 
 int current_game;
 _RegSet* schedule(_RegSet *prev) {
+	Log("in schedule");
 	current->tf = prev;
 	static int count=0;
 	if(current==&pcb[0]){
