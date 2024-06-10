@@ -44,6 +44,7 @@ int fs_open(const char* pathName, int flags, int mode){
 		}
 	}
 	assert(result!=-1);
+	file_table[result].open_offset = 0;
 	return result;
 }
 
