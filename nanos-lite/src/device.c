@@ -9,7 +9,7 @@ static const char *keyname[256] __attribute__((used)) = {
   [_KEY_NONE] = "NONE",
   _KEYS(NAME)
 };
-
+int current_game = 0;
 size_t events_read(void *buf, size_t len) {
 	char tmp[10];
 	bool whetherDown = false;
@@ -18,6 +18,11 @@ size_t events_read(void *buf, size_t len) {
 		key^=0x8000;
 		whetherDown = true;
 	}
+	if(whetherDown && key == _KEY_F12){
+		current_game = current_game==0?2:0;
+		Log("change the game");
+	}
+
 	if(key!=_KEY_NONE){
 		if(whetherDown){
 			sprintf(tmp, "%s, %s\n", "kd", keyname[key]);

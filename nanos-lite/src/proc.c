@@ -31,15 +31,15 @@ _RegSet* schedule(_RegSet *prev) {
 	Log("in schedule");
 	current->tf = prev;
 	static int count=0;
-	if(current==&pcb[0]){
-		if(count==20){
+	if(current==&pcb[current_game]){
+		if(count==1000){
 			current=&pcb[1];
 			count=0;
 		}else{
 			count++;
 		}
 	}else{
-		current=&pcb[0];
+		current=&pcb[current_game];
 	}
 	_switch(&current->as);
 	return current->tf;
